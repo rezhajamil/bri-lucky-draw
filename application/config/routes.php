@@ -53,4 +53,5 @@ $route['default_controller'] = 'welcome';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+$route['api/winners/list'] = 'winners/list_winners';
 $route['api/winners/save'] = 'winners/save_winners';

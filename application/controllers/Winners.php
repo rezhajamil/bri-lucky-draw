@@ -10,6 +10,43 @@ class Winners extends CI_Controller
         $this->load->database();
     }
 
+    public function list_winners()
+    {
+        $batch = $this->input->get('batch');
+
+        if ($batch) {
+            $batch_array = explode(',', $batch);
+            $this->db->where_in('batch', $batch_array);
+        }
+
+        $data = $this->db->get('winners')->result_array();
+
+        if (empty($data)) {
+            return $this->output
+                ->set_content_type('application/json')
+                ->set_status_header(404)
+                ->set_output(json_encode(['message' => 'No winners found']));
+        }
+
+        $data = array_map(function ($item) {
+            $filter = [];
+            $parts = explode('_', $item['prize']);
+
+            $filter['batch'] = $item['batch'];
+            $filter['hadiah'] = $item['prize'];
+            $filter['kode_hadiah'] =  isset($parts[1]) ? $parts[1] : '';
+            $filter['nama'] = $item['nama'];
+            $filter['personal_number'] = $item['personal_number'];
+            $filter['unit_kerja'] = $item['unit_kerja'];
+            return $filter;
+        }, $data);
+
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_status_header(201)
+            ->set_output(json_encode($data));
+    }
+
     public function save_winners()
     {
         // Ensure the request is POST
@@ -39,6 +76,7 @@ class Winners extends CI_Controller
             foreach ($batch['winners'] as $winner) {
                 $this->db->insert('winners', [
                     'batch' => $batch_number,
+                    'nama' => $winner['text'],
                     'personal_number' => $winner['Personal Number'],
                     'unit_kerja' => $winner['Unit Kerja'],
                     'jabatan' => $winner['Jabatan'],
